@@ -35,6 +35,7 @@ concurrency:
 
 jobs:
   prepare_release:
+    if: ${{ github.event_name != 'schedule' || github.repository == 'buddy-compiler/buddy-mlir' }}
     runs-on: ubuntu-22.04
     outputs:
       tag_name: ${{ steps.vars.outputs.tag_name }}
@@ -78,6 +79,10 @@ jobs:
 
           # Get latest release version
           LATEST_TAG="$(git tag --list 'release/v*' | sort -V | tail -n 1)"
+          if [ -z "${LATEST_TAG}" ]; then
+            echo "::error::No release/v* tag found. Create an initial release tag before publishing."
+            exit 1
+          fi
           LATEST_VERSION="${LATEST_TAG#release/v}"
           IFS=. read -r MAJOR MINOR PATCH <<< "${LATEST_VERSION}"
 
